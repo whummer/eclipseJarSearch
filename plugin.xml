@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension point = "org.eclipse.ui.actionSets">
+        <actionSet
+            id="net.hummer.eclipse.search.JarSearchActionSet"
+            label="JAR Search"
+	    visible="true"
+	    description="The action set for the Eclipse Jar Search">
+		    <menu
+			id="net.hummer.eclipse.search.JarSearchMenu"
+			label="JAR Search">
+			<separator name="samples"/>
+		    </menu>
+		    <action id="net.hummer.eclipse.search.JarSearchAction"
+			menubarPath="net.hummer.eclipse.search.JarSearchMenu/samples"
+			toolbarPath="Normal"
+			label="Search ..."
+			tooltip="Find text within JAR files on the classpath."
+			class="net.hummer.eclipse.search.JarSearchAction"/>
+        </actionSet>
+    </extension>
+
+</plugin>
