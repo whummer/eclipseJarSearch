@@ -71,7 +71,7 @@ public class JarSearcher {
 									fileToAdd = getPath(root.getFile(p).getLocation());
 								}
 								if(fileToAdd != null) {
-									System.out.println(fileToAdd);
+									//System.out.println(fileToAdd);
 									map.add(fileToAdd);
 								}
 							}
@@ -130,7 +130,7 @@ public class JarSearcher {
 			for(int i = 0; i < matches.size(); i ++) {
 				String m = matches.get(i).getMatchWithSurroundingContent(surroundingLength);
 				r += m;
-				System.out.println(m);
+				//System.out.println(m);
 				if(i < matches.size() - 1) {
 					 r += " ... \n";
 				}
@@ -144,19 +144,34 @@ public class JarSearcher {
 	}
 
 	public List<JarFileEntry> getJarEntriesContaining(String toSearch, boolean includeJRE) throws Exception {
+		return getJarEntriesContaining(toSearch, includeJRE, null);
+	}
+	public List<JarFileEntry> getJarEntriesContaining(String toSearch, boolean includeJRE, SearchResultListener l) throws Exception {
 		List<JarFileEntry> result = new LinkedList<JarFileEntry>();
 		Map<File,List<JarFileEntry>> results = new HashMap<File, List<JarFileEntry>>();
 		for(Entry<IJavaProject,Set<File>> e : getClasspathJarFiles(includeJRE).entrySet()) {
 			for(File jarFile : e.getValue()) {
-				if(!results.containsKey(jarFile)) {
-					List<JarFileEntry> entries = getJarEntriesContaining(jarFile, toSearch);
-					result.addAll(entries);
-					results.put(jarFile, entries);
-				}
-				for(JarFileEntry entry : results.get(jarFile)) {
-					entry.projectNames.add(e.getKey().getProject().getName());
+				if(l == null || l.stillRunning()) {
+					if(!results.containsKey(jarFile)) {
+						List<JarFileEntry> entries = getJarEntriesContaining(jarFile, toSearch);
+						if(l != null) {
+							for(JarFileEntry entry : entries) {
+								for(FileSearchMatch m : entry.matches) {
+									l.onResult(m);
+								}
+							}
+						}
+						result.addAll(entries);
+						results.put(jarFile, entries);
+					}
+					for(JarFileEntry entry : results.get(jarFile)) {
+						entry.projectNames.add(e.getKey().getProject().getName());
+					}
 				}
 			}
+		}
+		if(l != null) {
+			l.searchFinished();
 		}
 		return result;
 	}
@@ -202,4 +217,5 @@ public class JarSearcher {
 		}
 		return b.toString();
 	}
+
 }

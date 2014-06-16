@@ -1,11 +1,14 @@
 package io.hummer.eclipse.search;
 
+import io.hummer.eclipse.search.JarSearcher.FileSearchMatch;
 import io.hummer.eclipse.search.JarSearcher.JarFileEntry;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -23,11 +26,14 @@ import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -35,12 +41,15 @@ import org.eclipse.swt.widgets.Text;
 
 public class MainWindow extends ApplicationWindow {
 
+	private static final String TEXT_CANCEL = "Cancel";
+	private static final String TEXT_CANCELING = "Canceling...";
 	TableViewer tableViewer;
 	Table table;
 	Composite parent;
 	Text searchText;
+	Button searchButton;
 	Button includeJRE;
-	List<JarFileEntry> searchResults = new LinkedList<JarFileEntry>();
+	Set<JarFileEntry> searchResults = new HashSet<JarFileEntry>();
 
 	public MainWindow(Shell parentShell) {
 		super(parentShell);
@@ -52,6 +61,7 @@ public class MainWindow extends ApplicationWindow {
 
 		getShell().setSize(600, 400);
 		getShell().setText("Search Window");
+		Device device = Display.getCurrent ();
 
 		Composite container = new Composite(parent, SWT.NONE);
 		container.setLayout(new GridLayout(1, false));
@@ -61,15 +71,22 @@ public class MainWindow extends ApplicationWindow {
 		comp1.setLayout(grid);
 		Text label = new Text(comp1, SWT.TRANSPARENT);
 		label.setText("Search string: ");
+		Color grey = device.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+		label.setBackground(grey);
 		label.setEditable(false);
 		searchText = new Text(comp1, SWT.NONE);
 		searchText.setText("");
 		searchText.setSize(200, searchText.getSize().y);
-		Button btn = new Button(comp1, SWT.NONE);
-		btn.setText("Search");
-		btn.addSelectionListener(new SelectionAdapter() {
+		searchButton = new Button(comp1, SWT.NONE);
+		searchButton.setSize(300, searchButton.getSize().y);
+		searchButton.setText("Search");
+		searchButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				search();
+				if(searchButton.getText().equals("Search")) {
+					search();
+				} else if(searchButton.getText().equals(TEXT_CANCEL)) {
+					searchButton.setText(TEXT_CANCELING);
+				}
 			}
 		});
 		includeJRE = new Button(comp1, SWT.CHECK);
@@ -174,13 +191,56 @@ public class MainWindow extends ApplicationWindow {
 
 	private void search() {
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		JarSearcher s = new JarSearcher(workspace);
+		final JarSearcher s = new JarSearcher(workspace);
 		try {
-			List<JarFileEntry> files = 
-					s.getJarEntriesContaining(searchText.getText(), includeJRE.getSelection());
 			searchResults.clear();
-			searchResults.addAll(files);
-			tableViewer.setInput(searchResults);
+			searchButton.setText(TEXT_CANCEL);
+			final Display display = Display.getDefault();
+			final SearchResultListener l = new SearchResultListener() {
+				public void onResult(final FileSearchMatch match) {
+					display.asyncExec(new Runnable() {
+						public void run() {
+							searchResults.add(match.file);
+							tableViewer.setInput(searchResults);
+						}
+					});
+				}
+				@Override
+				public boolean stillRunning() {
+					final LinkedBlockingQueue<Boolean> q = new LinkedBlockingQueue<Boolean>();
+					display.asyncExec(new Runnable() {
+						public void run() {
+							try {
+								q.put(searchButton.getText().equals(TEXT_CANCEL));
+							} catch (InterruptedException e) { }
+						}
+					});
+					try {
+						return q.take();
+					} catch (InterruptedException e) {
+						return false;
+					}
+				}
+				public void searchFinished() {
+					display.asyncExec(new Runnable() {
+						public void run() {
+							searchButton.setText("Search");
+						}
+					});
+				}
+			};
+			final String search = searchText.getText();
+			final boolean jre = includeJRE.getSelection();
+			new Thread() {
+				public void run() {
+					try {
+						s.getJarEntriesContaining(search, jre, l);
+					} catch (Exception e) {
+						e.printStackTrace(); // TODO logging
+					}
+				}
+			}.start();
+			//searchResults.addAll(files);
 		} catch (Exception e) {
 			e.printStackTrace();
 			MessageDialog.openInformation(parent.getShell(), "Error",

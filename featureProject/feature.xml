@@ -2,7 +2,7 @@
 <feature
       id="io.hummer.eclipse.jarSearch.feature"
       label="Eclipse JAR Search Feature"
-      version="1.0.0">
+      version="1.0.1">
 
    <description url="http://www.example.com/description">
       [Enter Feature Description here.]
@@ -20,7 +20,7 @@
          id="io.hummer.eclipse.jarSearch"
          download-size="0"
          install-size="0"
-         version="1.0.0"
+         version="1.0.1"
          unpack="false"/>
 
 </feature>
