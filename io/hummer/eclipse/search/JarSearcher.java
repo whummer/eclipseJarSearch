@@ -1,4 +1,4 @@
-package net.hummer.eclipse.search;
+package io.hummer.eclipse.search;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -123,7 +123,7 @@ public class JarSearcher {
 		public String name;
 		public byte[] content;
 		public String contentString;
-		public final List<FileSearchMatch> matches = new LinkedList<>();
+		public final List<FileSearchMatch> matches = new LinkedList<FileSearchMatch>();
 		public final Set<String> projectNames = new HashSet<String>();
 		public String dumpMatches(int surroundingLength) {
 			String r = "";

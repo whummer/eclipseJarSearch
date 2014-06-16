@@ -1,13 +1,13 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: EclipseJARSearch
-Bundle-SymbolicName: eclipseJARSearch;singleton:=true
+Bundle-SymbolicName: io.hummer.eclipse.jarSearch;singleton:=true
 Bundle-Version: 1.0.0
-Bundle-Activator: net.hummer.eclipse.search.Activator
+Bundle-Activator: io.hummer.eclipse.search.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.jdt.core;bundle-version="3.7.3",
  org.eclipse.core.resources;bundle-version="3.7.101"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Export-Package: net.hummer.eclipse.search
+Export-Package: io.hummer.eclipse.search

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/io.hummer.eclipse.jarSearch.feature_1.0.0.jar" id="io.hummer.eclipse.jarSearch.feature" version="1.0.0">
+      <category name="jarSearch"/>
+   </feature>
+   <category-def name="jarSearch" label="Eclipse JAR Search"/>
+</site>

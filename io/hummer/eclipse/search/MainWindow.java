@@ -1,10 +1,11 @@
-package net.hummer.eclipse.search;
+package io.hummer.eclipse.search;
+
+import io.hummer.eclipse.search.JarSearcher.JarFileEntry;
 
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.hummer.eclipse.search.JarSearcher.JarFileEntry;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;

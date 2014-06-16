@@ -1,4 +1,4 @@
-package net.hummer.eclipse.search;
+package io.hummer.eclipse.search;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;

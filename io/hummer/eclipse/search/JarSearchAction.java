@@ -1,4 +1,4 @@
-package net.hummer.eclipse.search;
+package io.hummer.eclipse.search;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
